@@ -44,7 +44,9 @@ static int __init setup_board_id_hwname(char *str)
 
 	if (!strcmp(str, "excalibur") ||
             !strcmp(str, "gram") ||
-            !strcmp(str, "joyeuse"))
+            !strcmp(str, "joyeuse") ||
+            !strcmp(str, "curtana") ||
+            !strcmp(str, "miatoll"))
 		board_33w_supported = true;
 
 	pr_info("board_33w_supported : %s\n",

@@ -879,6 +879,7 @@ static int handle_jeita(struct step_chg_info *chip)
 
 		if ((real_type == POWER_SUPPLY_TYPE_USB_HVDCP_3P5)
 					|| (pval.intval == HVDCP3_CLASS_B_27W)
+					|| (real_type == POWER_SUPPLY_TYPE_USB_PD)
 					|| (pd_authen_result == 1)) {
 			rc = power_supply_get_property(chip->bms_psy,
 				POWER_SUPPLY_PROP_FASTCHARGE_MODE, &pval);

@@ -29,7 +29,7 @@
 #include "atoll-wcd937x-idp-audio-overlay.dtsi"
 #include "cust-atoll-audio-overlay.dtsi"
 #include "curtana-atoll-camera-sensor-idp.dtsi"
-#include "cust-low-charging.dtsi"
+#include "cust-high-charging.dtsi"
 
 / {
 	model = "wcd937x Audio Codec AB IDP CURTANA";

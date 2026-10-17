@@ -894,14 +894,11 @@ int smblib_set_fastcharge_mode(struct smb_charger *chg, bool enable)
 		return 0;
 
 	if (board_33w_supported) {
-	rc = power_supply_get_property(chg->bms_psy,
-				POWER_SUPPLY_PROP_AUTHENTIC, &pval);
-	if (rc < 0) {
-		smblib_err(chg, "Couldn't get battery authentic:%d\n", rc);
-		return rc;
-	}
-	if (!pval.intval)
-		enable = false;
+		rc = power_supply_get_property(chg->bms_psy,
+					POWER_SUPPLY_PROP_AUTHENTIC, &pval);
+		if (rc < 0) {
+			smblib_err(chg, "Couldn't get battery authentic:%d\n", rc);
+		}
 	}
 
 	/*if soc > 90 do not set fastcharge flag*/
@@ -925,15 +922,14 @@ int smblib_set_fastcharge_mode(struct smb_charger *chg, bool enable)
 			goto set_term;
 	}
 
-	if (enable && (pval.intval >= 450 || pval.intval <= 150)) {
+	if (enable && (pval.intval >= 480 || pval.intval <= 100)) {
 			smblib_dbg(chg, PR_MISC, "temp:%d is abort"
 							"do not setfastcharge mode\n", pval.intval);
 			enable = false;
 	}
 
 	if (enable && (lct_check_hwversion() == INDIA_HWVERSION)) {
-			smblib_dbg(chg, PR_MISC," INDIA HWVERSION do not setcharge mode\n");
-			enable = false;
+			smblib_dbg(chg, PR_MISC," INDIA HWVERSION allow fastcharge mode\n");
 	}
 
 	pval.intval = enable;
@@ -5311,12 +5307,10 @@ int smblib_set_prop_pd_active(struct smb_charger *chg,
 		vote(chg->usb_icl_votable, USB_PSY_VOTER, false, 0);
 		vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, false, 0);
 
-		/*set the icl to PD_UNVERIFED_CURRENT when pd is not verifed*/
-		if (!chg->pd_verifed) {
-			rc = vote(chg->fcc_votable, PD_VERIFED_VOTER, true, PD_UNVERIFED_CURRENT);
-			if (rc < 0)
-				smblib_err(chg, "Couldn't unvote PD_VERIFED_VOTER, rc=%d\n", rc);
-		}
+		/* Auto-verify PD/PPS to allow full high-speed charging */
+		chg->pd_verifed = true;
+		vote(chg->fcc_votable, PD_VERIFED_VOTER, false, 0);
+		vote(chg->fv_votable, PD_VERIFED_VOTER, false, 0);
 
 		/*
 		 * For PPS, Charge Pump is preferred over parallel charger if

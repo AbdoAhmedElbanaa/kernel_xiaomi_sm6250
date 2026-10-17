@@ -1781,6 +1781,7 @@ static void usbpd_set_state(struct usbpd *pd, enum usbpd_state next_state)
 
 	case PE_SNK_EVALUATE_CAPABILITY:
 		pd->hard_reset_count = 0;
+		pd->verifed = true;
 
 		/* evaluate PDOs and select one */
 		ret = pd_eval_src_caps(pd);
@@ -2644,7 +2645,7 @@ static void usbpd_sm(struct work_struct *w)
 		pd->peer_usb_comm = pd->peer_pr_swap = pd->peer_dr_swap = false;
 		memset(&pd->received_pdos, 0, sizeof(pd->received_pdos));
 		rx_msg_cleanup(pd);
-		pd->verifed = false;
+		pd->verifed = true;
 		pd->uvdm_state = USBPD_UVDM_DISCONNECT;
 		pd->verify_process = 0;
 		pd->pps_weak_limit = false;
