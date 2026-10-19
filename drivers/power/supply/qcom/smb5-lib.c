@@ -896,8 +896,10 @@ int smblib_set_fastcharge_mode(struct smb_charger *chg, bool enable)
 	if (board_33w_supported) {
 		rc = power_supply_get_property(chg->bms_psy,
 					POWER_SUPPLY_PROP_AUTHENTIC, &pval);
-		if (rc < 0) {
-			smblib_err(chg, "Couldn't get battery authentic:%d\n", rc);
+		if (rc < 0 || pval.intval <= 0) {
+			smblib_dbg(chg, PR_MISC, "Battery authentic not verified (%d), fallback to allow fastcharge directly\n", pval.intval);
+		} else {
+			smblib_dbg(chg, PR_MISC, "Battery authentic verified (%d)\n", pval.intval);
 		}
 	}
 
@@ -6093,9 +6095,9 @@ static void smblib_cc_un_compliant_charge_work(struct work_struct *work)
 			&& (chg->typec_mode == POWER_SUPPLY_TYPEC_NONE ||
 				chg->typec_mode == POWER_SUPPLY_TYPEC_NON_COMPLIANT)
 			&& (chg->cc_un_compliant_detected == false)) {
-		vote( chg->usb_icl_votable, CC_UN_COMPLIANT_VOTER, true, 500000);
-		vote( chg->fcc_votable, CC_UN_COMPLIANT_VOTER, true, 500000);
-		pr_err("CC uncompliant, set icl = 500mA\n");
+		vote( chg->usb_icl_votable, CC_UN_COMPLIANT_VOTER, true, 1800000);
+		vote( chg->fcc_votable, CC_UN_COMPLIANT_VOTER, true, 2000000);
+		pr_info("CC uncompliant / non-e-marked, safe fast ICL=1800mA, FCC=2000mA\n");
 		chg->cc_un_compliant_detected = true;
 		//smblib_apsd_enable(chg, true);
 		smblib_hvdcp_detect_enable(chg, true);
