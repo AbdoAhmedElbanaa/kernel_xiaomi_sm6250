@@ -665,6 +665,30 @@ int nfc_ioctl_power_states(struct file *filp, unsigned long arg)
 			dev_err(&nqx_dev->client->dev,
 				"firm_gpio is invalid\n");
 		}
+	} else if (arg == 5) {
+		/*
+		 * Hardware power reset (MODE_POWER_RESET):
+		 * Pulse VEN pin to power cycle the NFCC and recover
+		 * from any unresponsive or unpowered bus state.
+		 */
+		dev_dbg(&nqx_dev->client->dev, "nfc power reset (arg=5)\n");
+		nqx_disable_irq(nqx_dev);
+		if (gpio_is_valid(nqx_dev->firm_gpio)) {
+			gpio_set_value(nqx_dev->firm_gpio, 0);
+			usleep_range(10000, 10100);
+		}
+		gpio_set_value(nqx_dev->en_gpio, 0);
+		usleep_range(10000, 10100);
+		gpio_set_value(nqx_dev->en_gpio, 1);
+		usleep_range(10000, 10100);
+
+		if (nqx_dev->pdata->clk_pin_voting) {
+			r = nqx_clock_select(nqx_dev);
+			if (r < 0)
+				dev_err(&nqx_dev->client->dev, "unable to enable clock\n");
+		}
+		nqx_enable_irq(nqx_dev);
+		nqx_dev->nfc_ven_enabled = true;
 	} else {
 		r = -ENOIOCTLCMD;
 	}
